@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken;
 import com.liukun.coolweather.db.City;
 import com.liukun.coolweather.db.County;
 import com.liukun.coolweather.db.Province;
+import com.liukun.coolweather.gson.Weather;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -99,5 +100,10 @@ public class Utility {
             }
         }
         return false;
+    }
+
+    public static Weather handleWeatherResponse(String response) {
+        return new Gson().fromJson(response, new TypeToken<Weather>() {
+        }.getType());
     }
 }
