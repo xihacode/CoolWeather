@@ -3,6 +3,7 @@ package com.liukun.coolweather;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -56,7 +57,7 @@ public class ChooseAreaFragment extends Fragment {
     private ProgressBar mProgressBar;
 
     private List<Province> mProvinceList = new ArrayList<>();
-    private List<City> mCityList  = new ArrayList<>();
+    private List<City> mCityList = new ArrayList<>();
     private List<County> mCountyList = new ArrayList<>();
 
     private Province selectedProvince;
@@ -92,6 +93,12 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = mCityList.get(position);
                     queryCounties();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    String weatherId = mCountyList.get(position).getWeatherId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -215,6 +222,7 @@ public class ChooseAreaFragment extends Fragment {
                         public void run() {
                             closeProgressDialog();
                             if ("province".equals(type)) {
+                                Log.d(TAG, "onResponse: sss"+selectedCity);
                                 tileText.setText(selectedCity.getCityName());
                                 queryProvinces();
                             } else if ("city".equals(type)) {

@@ -6,21 +6,35 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     tools:context=".WeatherActivity">
+
+    <ImageView
+        android:id="@+id/bing_pic_img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop" />
+
     <ScrollView
         android:id="@+id/weather_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:overScrollMode="never"
         android:scrollbars="none">
+
         <LinearLayout
-            android:orientation="vertical"
+            android:fitsSystemWindows="true"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <include layout="@layout/title"/>
-            <include layout="@layout/now"/>
-            <include layout="@layout/forecase"/>
-            <include layout="@layout/api"/>
-            <include layout="@layout/suggstions"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include layout="@layout/title" />
+
+            <include layout="@layout/now" />
+
+            <include layout="@layout/forecase" />
+
+            <include layout="@layout/api" />
+
+            <include layout="@layout/suggstions" />
 
         </LinearLayout>
 

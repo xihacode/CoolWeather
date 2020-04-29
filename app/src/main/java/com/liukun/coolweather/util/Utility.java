@@ -23,6 +23,7 @@ import java.util.List;
  * Description: 解析处理json数据 并将各地区信息存入数据库
  */
 public class Utility {
+    private static final String TAG = "Utility";
 
     public static boolean handleProvinceResponse(String response) {
         if (!TextUtils.isEmpty(response)) {
@@ -103,7 +104,10 @@ public class Utility {
     }
 
     public static Weather handleWeatherResponse(String response) {
-        return new Gson().fromJson(response, new TypeToken<Weather>() {
+//        Log.d(TAG, "handleWeatherResponse: ");
+        Weather weather = new Gson().fromJson(response, new TypeToken<Weather>() {
         }.getType());
+
+        return weather;
     }
 }
