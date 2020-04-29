@@ -1,6 +1,9 @@
 package com.liukun.coolweather;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -13,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -41,6 +45,9 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView cartWashText;
     private TextView sportText;
     private ImageView bingPicImg;
+    public SwipeRefreshLayout mRefreshLayout;
+    public DrawerLayout mDrawerLayout;
+    private Button navButton;
     private static final String TAG = "WeatherActivity";
 
     @Override
@@ -65,7 +72,19 @@ public class WeatherActivity extends AppCompatActivity {
         cartWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
         bingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
+        mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navButton = (Button) findViewById(R.id.nav_button);
 
+
+        mRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+        mRefreshLayout.setRefreshing(true);
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather", null);
@@ -75,19 +94,27 @@ public class WeatherActivity extends AppCompatActivity {
         } else {
             loadBingPic();
         }
+        final String weatherId;
         if (weatherString != null) {
             Log.d(TAG, "onCreate: " + weatherString);
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            weatherId = weather.getHeWeather().get(0).getBasic().getId();
             showWeatherInfo(weather.getHeWeather().get(0));
         } else {
-            String weatherId = getIntent().getStringExtra("weather_id");
+            weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
         }
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(weatherId);
+            }
+        });
 
     }
 
-    private void requestWeather(String weatherId) {
+    public void requestWeather(String weatherId) {
         String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId +
                 "&key=d49ad74fb9064209928545d8605ffeae";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
@@ -98,6 +125,7 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(WeatherActivity.this, "获取天气信息失败!",
                                 Toast.LENGTH_LONG).show();
+                        mRefreshLayout.setRefreshing(false);
                     }
                 });
             }
@@ -121,6 +149,7 @@ public class WeatherActivity extends AppCompatActivity {
                                 Toast.makeText(WeatherActivity.this, "获取天气信息失败!",
                                         Toast.LENGTH_LONG).show();
                             }
+                            mRefreshLayout.setRefreshing(false);
                         }
                     }
 
@@ -137,6 +166,7 @@ public class WeatherActivity extends AppCompatActivity {
      * @param weatherEntity
      */
     private void showWeatherInfo(Weather.HeWeatherEntity weatherEntity) {
+        mRefreshLayout.setRefreshing(false);
         String cityName = weatherEntity.getBasic().getCity();
         String updateTime = weatherEntity.getBasic().getUpdate().getLoc();
         String degree = weatherEntity.getNow().getTmp() + "摄氏度";

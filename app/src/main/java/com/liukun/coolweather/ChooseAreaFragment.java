@@ -95,10 +95,18 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 } else if (currentLevel == LEVEL_COUNTY) {
                     String weatherId = mCountyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id", weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if (getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else if (getActivity() instanceof WeatherActivity) {
+                        WeatherActivity weatherActivity = (WeatherActivity) getActivity();
+                        weatherActivity.mDrawerLayout.closeDrawers();
+                        weatherActivity.mRefreshLayout.setRefreshing(true);
+                        weatherActivity.requestWeather(weatherId);
+                    }
+
                 }
             }
         });
@@ -201,11 +209,8 @@ public class ChooseAreaFragment extends Fragment {
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                 String responseText = response.body().string();
                 boolean result = false;
-                Log.d(TAG, "onResponse: dddd");
                 if ("province".equals(type)) {
-                    Log.d(TAG, "onResponse: ++++");
                     result = Utility.handleProvinceResponse(responseText);
-                    Log.d(TAG, "onResponse:aaaa");
                 } else if ("city".equals(type)) {
                     result = Utility.handleCityResponse(responseText, selectedProvince.getId());
 
@@ -213,7 +218,6 @@ public class ChooseAreaFragment extends Fragment {
                     result = Utility.handleCountyResponse(responseText, selectedCity.getId());
                 }
                 if (result) {
-                    Log.d(TAG, "onResponse: sss");
                     if (getActivity() == null) {
                         return;
                     }
@@ -222,8 +226,8 @@ public class ChooseAreaFragment extends Fragment {
                         public void run() {
                             closeProgressDialog();
                             if ("province".equals(type)) {
-                                Log.d(TAG, "onResponse: sss"+selectedCity);
-                                tileText.setText(selectedCity.getCityName());
+//                                if (selectedCity != null)
+//                                    tileText.setText(selectedCity.getCityName());
                                 queryProvinces();
                             } else if ("city".equals(type)) {
                                 queryCities();
