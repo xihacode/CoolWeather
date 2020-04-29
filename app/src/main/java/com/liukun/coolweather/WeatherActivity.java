@@ -8,6 +8,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.liukun.coolweather.gson.Weather;
+import com.liukun.coolweather.service.AutoUpdateService;
 import com.liukun.coolweather.util.HttpUtil;
 import com.liukun.coolweather.util.Utility;
 
@@ -142,7 +144,7 @@ public class WeatherActivity extends AppCompatActivity {
                                 SharedPreferences.Editor editor = PreferenceManager
                                         .getDefaultSharedPreferences(WeatherActivity.this)
                                         .edit();
-                                editor.putString("weather_id", responseText);
+                                editor.putString("weather", responseText);
                                 editor.apply();
                                 showWeatherInfo(weatherEntity);
                             } else {
@@ -166,42 +168,49 @@ public class WeatherActivity extends AppCompatActivity {
      * @param weatherEntity
      */
     private void showWeatherInfo(Weather.HeWeatherEntity weatherEntity) {
-        mRefreshLayout.setRefreshing(false);
-        String cityName = weatherEntity.getBasic().getCity();
-        String updateTime = weatherEntity.getBasic().getUpdate().getLoc();
-        String degree = weatherEntity.getNow().getTmp() + "摄氏度";
-        String weatherInfo = weatherEntity.getNow().getCond_txt();
-        titleCity.setText(cityName);
-        titleUpdateTime.setText(updateTime);
-        degreeText.setText(degree);
-        weatherInfoText.setText(weatherInfo);
-        forecastLayout.removeAllViews();
+        if (weatherEntity != null && "ok".equals(weatherEntity.getStatus())) {
+            mRefreshLayout.setRefreshing(false);
+            String cityName = weatherEntity.getBasic().getCity();
+            String updateTime = weatherEntity.getBasic().getUpdate().getLoc();
+            String degree = weatherEntity.getNow().getTmp() + "摄氏度";
+            String weatherInfo = weatherEntity.getNow().getCond_txt();
+            titleCity.setText(cityName);
+            titleUpdateTime.setText(updateTime);
+            degreeText.setText(degree);
+            weatherInfoText.setText(weatherInfo);
+            forecastLayout.removeAllViews();
 
-        for (Weather.HeWeatherEntity.DailyForecastEntity forecastEntity
-                : weatherEntity.getDaily_forecast()) {
-            View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
-            //TODO 添加未来天气的控件
-            TextView dateText = (TextView) view.findViewById(R.id.data_text);
-            TextView infoText = (TextView) view.findViewById(R.id.info_text);
-            TextView maxText = (TextView) view.findViewById(R.id.max_text);
-            TextView minText = (TextView) view.findViewById(R.id.min_text);
-            dateText.setText(forecastEntity.getDate());
-            infoText.setText(forecastEntity.getCond().getTxt_d());
-            maxText.setText(forecastEntity.getTmp().getMax());
-            minText.setText(forecastEntity.getTmp().getMin());
-            forecastLayout.addView(view);
+            for (Weather.HeWeatherEntity.DailyForecastEntity forecastEntity
+                    : weatherEntity.getDaily_forecast()) {
+                View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
+                //TODO 添加未来天气的控件
+                TextView dateText = (TextView) view.findViewById(R.id.data_text);
+                TextView infoText = (TextView) view.findViewById(R.id.info_text);
+                TextView maxText = (TextView) view.findViewById(R.id.max_text);
+                TextView minText = (TextView) view.findViewById(R.id.min_text);
+                dateText.setText(forecastEntity.getDate());
+                infoText.setText(forecastEntity.getCond().getTxt_d());
+                maxText.setText(forecastEntity.getTmp().getMax());
+                minText.setText(forecastEntity.getTmp().getMin());
+                forecastLayout.addView(view);
+            }
+            if (weatherEntity.getAqi() != null) {
+                apiText.setText(weatherEntity.getAqi().getCity().getAqi());
+                pm25Text.setText(weatherEntity.getAqi().getCity().getPm25());
+            }
+            String comfort = "舒适度：" + weatherEntity.getSuggestion().getComf().getTxt();
+            String carWash = "洗车指数：" + weatherEntity.getSuggestion().getCw().getTxt();
+            String sport = "运动建议：" + weatherEntity.getSuggestion().getSport().getTxt();
+            comfortText.setText(comfort);
+            cartWashText.setText(carWash);
+            sportText.setText(sport);
+            weatherLayout.setVisibility(View.VISIBLE);
+
+            Intent intent = new Intent(this, AutoUpdateService.class);
+            startService(intent);
+        } else {
+            Toast.makeText(this, "获取天气信息失败", Toast.LENGTH_LONG).show();
         }
-        if (weatherEntity.getAqi() != null) {
-            apiText.setText(weatherEntity.getAqi().getCity().getAqi());
-            pm25Text.setText(weatherEntity.getAqi().getCity().getPm25());
-        }
-        String comfort = "舒适度：" + weatherEntity.getSuggestion().getComf().getTxt();
-        String carWash = "洗车指数：" + weatherEntity.getSuggestion().getCw().getTxt();
-        String sport = "运动建议：" + weatherEntity.getSuggestion().getSport().getTxt();
-        comfortText.setText(comfort);
-        cartWashText.setText(carWash);
-        sportText.setText(sport);
-        weatherLayout.setVisibility(View.VISIBLE);
     }
 
     private void loadBingPic() {

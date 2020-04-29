@@ -54,7 +54,8 @@ public class ChooseAreaFragment extends Fragment {
     TextView tileText;
     private ArrayAdapter<String> mAdapter;
     private List<String> dataList = new ArrayList<>();
-    private ProgressBar mProgressBar;
+    //    private ProgressBar mProgressBar;
+    private CustomProgressDialog mProgressDialog;
 
     private List<Province> mProvinceList = new ArrayList<>();
     private List<City> mCityList = new ArrayList<>();
@@ -243,20 +244,21 @@ public class ChooseAreaFragment extends Fragment {
     }
 
     private void showProgressDialog() {
-        if (mProgressBar == null) {
-            mProgressBar = new ProgressBar(getContext());
-            mProgressBar.setVisibility(View.VISIBLE);
-            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        if (mProgressDialog == null) {
+            CustomProgressDialog.showLoading(getContext());
+//            mProgressDialog = new CustomProgressDialog()
+//            mProgressBar.setVisibility(View.VISIBLE);
+//            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+//                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         }
     }
 
     private void closeProgressDialog() {
-        if (mProgressBar != null) {
-            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-            mProgressBar.setVisibility(View.GONE);
-        }
-
+//        if (mProgressBar != null) {
+//            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+//            mProgressBar.setVisibility(View.GONE);
+//        }
+        CustomProgressDialog.stopLoading();
     }
 
 }
